@@ -1,0 +1,49 @@
+{
+  "count_table": [
+    {
+      "name": "第一次直接萃取",
+      "count": 438,
+      "types": {
+        "episodic_memory": 106,
+        "semantic_memory": 10,
+        "user_profile": 322
+      }
+    },
+    {
+      "name": "原 Dreaming 新增",
+      "count": 69,
+      "types": {
+        "episodic_memory": 19,
+        "semantic_memory": 1,
+        "user_profile": 49
+      }
+    },
+    {
+      "name": "原 Dreaming 删除",
+      "count": 42,
+      "types": {
+        "episodic_memory": 20,
+        "user_profile": 22
+      }
+    },
+    {
+      "name": "原 Dreaming 最终记忆",
+      "count": 465,
+      "types": {
+        "episodic_memory": 105,
+        "semantic_memory": 11,
+        "user_profile": 349
+      }
+    },
+    {
+      "name": "独立模块二次萃取",
+      "count": 0,
+      "types": {}
+    }
+  ],
+  "exact_match_count": 0,
+  "similarity_ge_080_count": 0,
+  "similarity_ge_060_count": 0,
+  "average_best_similarity": 0.0,
+  "nearest_matches": []
+}

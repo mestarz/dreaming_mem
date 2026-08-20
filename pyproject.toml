@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agent-dreaming"
+version = "0.1.0"
+description = "Standalone second-stage memory consolidation extracted from Agent Memory dreaming"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+authors = [{ name = "Agent Memory contributors" }]
+dependencies = []
+
+[project.scripts]
+agent-dreaming = "agent_dreaming.cli:main"
+
+[tool.setuptools.package-data]
+agent_dreaming = ["prompts/*.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

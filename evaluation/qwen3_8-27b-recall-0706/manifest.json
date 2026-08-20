@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0",
+  "status": "prepared",
+  "project_recall_script": "agent_memory_tests/07_file_vector_recall_top5.py",
+  "recall_csv": "/home/xinxia/workspace/memory/0706记忆端到端测试用例-删除上下文-记忆召回.csv",
+  "recall_csv_sha256": "f32af359695e763bf1d1d48d3e62f63430f999b08cd8f9ecd73a82569bcec6fd",
+  "embedding_model": "bge-m3:latest",
+  "top_k": 5,
+  "threshold": null,
+  "deduplicate": true,
+  "datasets": [
+    {
+      "temperature": 0.1,
+      "record_count": 218,
+      "source": "/home/xinxia/workspace/memory/dreaming-memory/evaluation/qwen3_8-27b-temperature-study/temperature_0.1/recall_corpus.json",
+      "source_sha256": "dfd57b4c3eec850822000529d1a2986485d66e8a8d0469741646869fa75f7bb0",
+      "memory_file": "/home/xinxia/workspace/memory/dreaming-memory/evaluation/qwen3_8-27b-recall-0706/temperature_0.1/memory_corpus.tsv",
+      "memory_file_sha256": "ddb2e358d0b2223f8b0532fe3974c6a6439246d1f315a041b934805523368910",
+      "output_dir": "/home/xinxia/workspace/memory/dreaming-memory/evaluation/qwen3_8-27b-recall-0706/temperature_0.1"
+    },
+    {
+      "temperature": 0.2,
+      "record_count": 218,
+      "source": "/home/xinxia/workspace/memory/dreaming-memory/evaluation/qwen3_8-27b-temperature-study/temperature_0.2/recall_corpus.json",
+      "source_sha256": "c278ac69fdddf43d58b98fe92b421e216e57bec9dacdd56087cd7f2a394d618e",
+      "memory_file": "/home/xinxia/workspace/memory/dreaming-memory/evaluation/qwen3_8-27b-recall-0706/temperature_0.2/memory_corpus.tsv",
+      "memory_file_sha256": "b76793918f179c008020585d8a9f910f9ec4b98e6a3e4cf79eb35fccbc955e81",
+      "output_dir": "/home/xinxia/workspace/memory/dreaming-memory/evaluation/qwen3_8-27b-recall-0706/temperature_0.2"
+    },
+    {
+      "temperature": 0.5,
+      "record_count": 218,
+      "source": "/home/xinxia/workspace/memory/dreaming-memory/evaluation/qwen3_8-27b-temperature-study/temperature_0.5/recall_corpus.json",
+      "source_sha256": "3a964ea84ace339109773fbfebb308c2d57e960709a33c8fb56e1f9b8b95851b",
+      "memory_file": "/home/xinxia/workspace/memory/dreaming-memory/evaluation/qwen3_8-27b-recall-0706/temperature_0.5/memory_corpus.tsv",
+      "memory_file_sha256": "c6d3dd2c74c2e057070279219409a95a0a25ac0d083985379f9de3384a26d7f2",
+      "output_dir": "/home/xinxia/workspace/memory/dreaming-memory/evaluation/qwen3_8-27b-recall-0706/temperature_0.5"
+    },
+    {
+      "temperature": 1.0,
+      "record_count": 218,
+      "source": "/home/xinxia/workspace/memory/dreaming-memory/evaluation/qwen3_8-27b-temperature-study/temperature_1/recall_corpus.json",
+      "source_sha256": "50899cd1b63205862487ff352487dec21363c0fbbf3d6fc645315346318158a3",
+      "memory_file": "/home/xinxia/workspace/memory/dreaming-memory/evaluation/qwen3_8-27b-recall-0706/temperature_1/memory_corpus.tsv",
+      "memory_file_sha256": "0207a7e136c33826567f1715f2520dc584ac38d41a2da7a1474471114cb08d72",
+      "output_dir": "/home/xinxia/workspace/memory/dreaming-memory/evaluation/qwen3_8-27b-recall-0706/temperature_1"
+    }
+  ]
+}

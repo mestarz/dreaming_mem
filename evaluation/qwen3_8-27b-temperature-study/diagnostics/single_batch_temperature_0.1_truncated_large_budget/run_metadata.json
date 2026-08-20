@@ -1,0 +1,27 @@
+{
+  "model": "qwen3.8:27b",
+  "base_url": "http://127.0.0.1:11434",
+  "started_at": "2026-08-19T15:17:08.674443+08:00",
+  "elapsed_seconds": 271.518,
+  "input_source": "/home/xinxia/workspace/memory/agent_memory_tests/runtimes/full_0706_dreaming_batch2_20260818/dreaming_results/memories_before.json",
+  "baseline_after": "/home/xinxia/workspace/memory/agent_memory_tests/runtimes/full_0706_dreaming_batch2_20260818/dreaming_results/memories_after.json",
+  "baseline_added": "/home/xinxia/workspace/memory/agent_memory_tests/runtimes/full_0706_dreaming_batch2_20260818/dreaming_results/dreaming_added_memories.json",
+  "input_count": 438,
+  "input_source_count": 103,
+  "output_count": 0,
+  "omitted_count": 0,
+  "llm_call_count": 2,
+  "config": {
+    "max_input_tokens": 100000,
+    "max_output_items": 100,
+    "retries": 3,
+    "temperature": 0.1,
+    "top_p": 0.1,
+    "think": false,
+    "num_ctx": 131072,
+    "num_predict": 65536,
+    "ollama_format": null,
+    "module_max_output_items": 100,
+    "timeout": 1800.0
+  }
+}

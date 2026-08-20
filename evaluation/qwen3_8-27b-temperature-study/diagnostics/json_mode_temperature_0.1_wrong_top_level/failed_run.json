@@ -1,0 +1,16 @@
+{
+  "status": "failed",
+  "model": "qwen3.8:27b",
+  "temperature": 0.1,
+  "top_p": 0.1,
+  "think": false,
+  "num_ctx": 131072,
+  "num_predict": 65536,
+  "ollama_format": "json",
+  "module_max_output_items": 100,
+  "started_at": "2026-08-19T15:16:26.924613+08:00",
+  "elapsed_seconds": 2.993,
+  "error_type": "SchemaError",
+  "error": "dreaming extraction failed after 3 attempts: LLM output must be a JSON array",
+  "llm_call_count": 3
+}

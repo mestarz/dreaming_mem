@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "status": "completed",
+  "dataset_type": "standalone_dreaming_recall_corpus",
+  "model": "qwen3.8:27b",
+  "temperature": 0.1,
+  "top_p": 0.1,
+  "record_count": 100,
+  "record_types": {
+    "user_profile": 100
+  },
+  "important_count": 2,
+  "input_count": 438,
+  "input_source_count": 103,
+  "omitted_count": 0,
+  "started_at": "2026-08-19T15:05:38.149684+08:00",
+  "elapsed_seconds": 214.282,
+  "source_files": {
+    "first_pass_memories": "/home/xinxia/workspace/memory/agent_memory_tests/runtimes/full_0706_dreaming_batch2_20260818/dreaming_results/memories_before.json",
+    "original_dreaming_after": "/home/xinxia/workspace/memory/agent_memory_tests/runtimes/full_0706_dreaming_batch2_20260818/dreaming_results/memories_after.json",
+    "original_dreaming_added": "/home/xinxia/workspace/memory/agent_memory_tests/runtimes/full_0706_dreaming_batch2_20260818/dreaming_results/dreaming_added_memories.json"
+  },
+  "recall_files": [
+    "recall_corpus.json",
+    "recall_corpus.csv"
+  ],
+  "audit_files": [
+    "input_memories.json",
+    "dreaming_result.json",
+    "raw_llm_responses.json",
+    "comparison.json",
+    "run_metadata.json",
+    "report.md",
+    "ARCHIVE_README.md"
+  ]
+}

@@ -1,0 +1,341 @@
+{
+  "schema_version": "1.0",
+  "status": "completed_and_validated",
+  "recall_script": "/home/xinxia/workspace/memory/agent_memory_tests/07_file_vector_recall_top5.py",
+  "recall_script_sha256": "4104a0ad063f68bd61579310c39b636be0947f608aa97b2ce042e63c415dafc7",
+  "recall_csv": "/home/xinxia/workspace/memory/0706记忆端到端测试用例-删除上下文-记忆召回.csv",
+  "recall_csv_sha256": "f32af359695e763bf1d1d48d3e62f63430f999b08cd8f9ecd73a82569bcec6fd",
+  "method": {
+    "embedding_provider": "ollama",
+    "embedding_model": "bge-m3:latest",
+    "similarity": "cosine",
+    "top_k": 5,
+    "threshold": null,
+    "deduplicated": true
+  },
+  "runs": {
+    "0.1": {
+      "temperature": 0.1,
+      "summary_file": "/home/xinxia/workspace/memory/dreaming-memory/evaluation/qwen3_8-27b-recall-0706/temperature_0.1/summary_file_vector_top5.json",
+      "summary_sha256": "9f06184204f69c426050ba80659e2b8c7eb39226d7241c3b854379bb1d638cff",
+      "details_file": "/home/xinxia/workspace/memory/dreaming-memory/evaluation/qwen3_8-27b-recall-0706/temperature_0.1/file_vector_recall_top5_details.csv",
+      "details_sha256": "9b2c537b39db33b19fb20950c2f7d054c67ebc17bbe83d833cafedcb2347c5d7",
+      "memory_file": "/home/xinxia/workspace/memory/dreaming-memory/evaluation/qwen3_8-27b-recall-0706/temperature_0.1/memory_corpus.tsv",
+      "memory_file_sha256": "ddb2e358d0b2223f8b0532fe3974c6a6439246d1f315a041b934805523368910",
+      "candidate_count": 218,
+      "query_count": 305,
+      "positive_count": 292,
+      "recall_at_k": {
+        "recall@1": {
+          "total": 292,
+          "passed": 129,
+          "failed": 163,
+          "rate": 0.441781
+        },
+        "recall@2": {
+          "total": 292,
+          "passed": 155,
+          "failed": 137,
+          "rate": 0.530822
+        },
+        "recall@3": {
+          "total": 292,
+          "passed": 167,
+          "failed": 125,
+          "rate": 0.571918
+        },
+        "recall@4": {
+          "total": 292,
+          "passed": 178,
+          "failed": 114,
+          "rate": 0.609589
+        },
+        "recall@5": {
+          "total": 292,
+          "passed": 186,
+          "failed": 106,
+          "rate": 0.636986
+        }
+      },
+      "corpus_coverage_upper_bound": {
+        "total": 292,
+        "passed": 223,
+        "failed": 69,
+        "rate": 0.763699
+      },
+      "accuracy_among_coverable": {
+        "total": 223,
+        "passed": 186,
+        "failed": 37,
+        "rate": 0.834081
+      },
+      "all_rows": {
+        "total": 305,
+        "passed": 199,
+        "failed": 106,
+        "rate": 0.652459
+      }
+    },
+    "0.2": {
+      "temperature": 0.2,
+      "summary_file": "/home/xinxia/workspace/memory/dreaming-memory/evaluation/qwen3_8-27b-recall-0706/temperature_0.2/summary_file_vector_top5.json",
+      "summary_sha256": "c80d038aecfd44a02057279fe977dc0291991298de46c42d4806fc9ba352be33",
+      "details_file": "/home/xinxia/workspace/memory/dreaming-memory/evaluation/qwen3_8-27b-recall-0706/temperature_0.2/file_vector_recall_top5_details.csv",
+      "details_sha256": "e6470d1abebf798a7dc7e05c6ba09d3866ed802eca3431e37955e8cecf46bde4",
+      "memory_file": "/home/xinxia/workspace/memory/dreaming-memory/evaluation/qwen3_8-27b-recall-0706/temperature_0.2/memory_corpus.tsv",
+      "memory_file_sha256": "b76793918f179c008020585d8a9f910f9ec4b98e6a3e4cf79eb35fccbc955e81",
+      "candidate_count": 218,
+      "query_count": 305,
+      "positive_count": 292,
+      "recall_at_k": {
+        "recall@1": {
+          "total": 292,
+          "passed": 129,
+          "failed": 163,
+          "rate": 0.441781
+        },
+        "recall@2": {
+          "total": 292,
+          "passed": 156,
+          "failed": 136,
+          "rate": 0.534247
+        },
+        "recall@3": {
+          "total": 292,
+          "passed": 167,
+          "failed": 125,
+          "rate": 0.571918
+        },
+        "recall@4": {
+          "total": 292,
+          "passed": 178,
+          "failed": 114,
+          "rate": 0.609589
+        },
+        "recall@5": {
+          "total": 292,
+          "passed": 186,
+          "failed": 106,
+          "rate": 0.636986
+        }
+      },
+      "corpus_coverage_upper_bound": {
+        "total": 292,
+        "passed": 223,
+        "failed": 69,
+        "rate": 0.763699
+      },
+      "accuracy_among_coverable": {
+        "total": 223,
+        "passed": 186,
+        "failed": 37,
+        "rate": 0.834081
+      },
+      "all_rows": {
+        "total": 305,
+        "passed": 199,
+        "failed": 106,
+        "rate": 0.652459
+      }
+    },
+    "0.5": {
+      "temperature": 0.5,
+      "summary_file": "/home/xinxia/workspace/memory/dreaming-memory/evaluation/qwen3_8-27b-recall-0706/temperature_0.5/summary_file_vector_top5.json",
+      "summary_sha256": "5d5443cf79217049b99b99fb56981608e7a8f8d7dd5c5b8fbd7384a8f7ecf5ce",
+      "details_file": "/home/xinxia/workspace/memory/dreaming-memory/evaluation/qwen3_8-27b-recall-0706/temperature_0.5/file_vector_recall_top5_details.csv",
+      "details_sha256": "3a880018eecc967d915327a4813028cf173c0a1942d792db0f22a1b33aec6b00",
+      "memory_file": "/home/xinxia/workspace/memory/dreaming-memory/evaluation/qwen3_8-27b-recall-0706/temperature_0.5/memory_corpus.tsv",
+      "memory_file_sha256": "c6d3dd2c74c2e057070279219409a95a0a25ac0d083985379f9de3384a26d7f2",
+      "candidate_count": 218,
+      "query_count": 305,
+      "positive_count": 292,
+      "recall_at_k": {
+        "recall@1": {
+          "total": 292,
+          "passed": 129,
+          "failed": 163,
+          "rate": 0.441781
+        },
+        "recall@2": {
+          "total": 292,
+          "passed": 156,
+          "failed": 136,
+          "rate": 0.534247
+        },
+        "recall@3": {
+          "total": 292,
+          "passed": 167,
+          "failed": 125,
+          "rate": 0.571918
+        },
+        "recall@4": {
+          "total": 292,
+          "passed": 178,
+          "failed": 114,
+          "rate": 0.609589
+        },
+        "recall@5": {
+          "total": 292,
+          "passed": 186,
+          "failed": 106,
+          "rate": 0.636986
+        }
+      },
+      "corpus_coverage_upper_bound": {
+        "total": 292,
+        "passed": 223,
+        "failed": 69,
+        "rate": 0.763699
+      },
+      "accuracy_among_coverable": {
+        "total": 223,
+        "passed": 186,
+        "failed": 37,
+        "rate": 0.834081
+      },
+      "all_rows": {
+        "total": 305,
+        "passed": 199,
+        "failed": 106,
+        "rate": 0.652459
+      }
+    },
+    "1": {
+      "temperature": 1.0,
+      "summary_file": "/home/xinxia/workspace/memory/dreaming-memory/evaluation/qwen3_8-27b-recall-0706/temperature_1/summary_file_vector_top5.json",
+      "summary_sha256": "d1ee9bbf223f64a8c4abb2a5287501a76504ac8bc34bbbc298d7fe752e029076",
+      "details_file": "/home/xinxia/workspace/memory/dreaming-memory/evaluation/qwen3_8-27b-recall-0706/temperature_1/file_vector_recall_top5_details.csv",
+      "details_sha256": "376bfd9b074f16eba99368623acbd40a88d2aae388b4280fd68fdfffe31a8a44",
+      "memory_file": "/home/xinxia/workspace/memory/dreaming-memory/evaluation/qwen3_8-27b-recall-0706/temperature_1/memory_corpus.tsv",
+      "memory_file_sha256": "0207a7e136c33826567f1715f2520dc584ac38d41a2da7a1474471114cb08d72",
+      "candidate_count": 218,
+      "query_count": 305,
+      "positive_count": 292,
+      "recall_at_k": {
+        "recall@1": {
+          "total": 292,
+          "passed": 129,
+          "failed": 163,
+          "rate": 0.441781
+        },
+        "recall@2": {
+          "total": 292,
+          "passed": 156,
+          "failed": 136,
+          "rate": 0.534247
+        },
+        "recall@3": {
+          "total": 292,
+          "passed": 167,
+          "failed": 125,
+          "rate": 0.571918
+        },
+        "recall@4": {
+          "total": 292,
+          "passed": 178,
+          "failed": 114,
+          "rate": 0.609589
+        },
+        "recall@5": {
+          "total": 292,
+          "passed": 186,
+          "failed": 106,
+          "rate": 0.636986
+        }
+      },
+      "corpus_coverage_upper_bound": {
+        "total": 292,
+        "passed": 223,
+        "failed": 69,
+        "rate": 0.763699
+      },
+      "accuracy_among_coverable": {
+        "total": 223,
+        "passed": 186,
+        "failed": 37,
+        "rate": 0.834081
+      },
+      "all_rows": {
+        "total": 305,
+        "passed": 199,
+        "failed": 106,
+        "rate": 0.652459
+      }
+    }
+  },
+  "differences_against_temperature_0.1": {
+    "0.1_vs_0.2": {
+      "recall@1": {
+        "gained_row_numbers": [],
+        "lost_row_numbers": []
+      },
+      "recall@2": {
+        "gained_row_numbers": [
+          "89"
+        ],
+        "lost_row_numbers": []
+      },
+      "recall@3": {
+        "gained_row_numbers": [],
+        "lost_row_numbers": []
+      },
+      "recall@4": {
+        "gained_row_numbers": [],
+        "lost_row_numbers": []
+      },
+      "recall@5": {
+        "gained_row_numbers": [],
+        "lost_row_numbers": []
+      }
+    },
+    "0.1_vs_0.5": {
+      "recall@1": {
+        "gained_row_numbers": [],
+        "lost_row_numbers": []
+      },
+      "recall@2": {
+        "gained_row_numbers": [
+          "89"
+        ],
+        "lost_row_numbers": []
+      },
+      "recall@3": {
+        "gained_row_numbers": [],
+        "lost_row_numbers": []
+      },
+      "recall@4": {
+        "gained_row_numbers": [],
+        "lost_row_numbers": []
+      },
+      "recall@5": {
+        "gained_row_numbers": [],
+        "lost_row_numbers": []
+      }
+    },
+    "0.1_vs_1": {
+      "recall@1": {
+        "gained_row_numbers": [],
+        "lost_row_numbers": []
+      },
+      "recall@2": {
+        "gained_row_numbers": [
+          "89"
+        ],
+        "lost_row_numbers": []
+      },
+      "recall@3": {
+        "gained_row_numbers": [],
+        "lost_row_numbers": []
+      },
+      "recall@4": {
+        "gained_row_numbers": [],
+        "lost_row_numbers": []
+      },
+      "recall@5": {
+        "gained_row_numbers": [],
+        "lost_row_numbers": []
+      }
+    }
+  },
+  "conclusion": "Temperatures 0.2, 0.5, and 1.0 have identical aggregate metrics. Compared with 0.1, they gain one positive row at Recall@2; all other Recall@K counts match."
+}
