@@ -1,4 +1,4 @@
-"""Small LLM boundary plus optional OpenAI-compatible HTTP implementation."""
+"""精简的 LLM 调用边界，以及可选的 OpenAI 兼容 HTTP 实现。"""
 
 from __future__ import annotations
 
@@ -14,12 +14,12 @@ from typing import Any, Awaitable, Callable, Protocol, runtime_checkable
 @runtime_checkable
 class LLMClient(Protocol):
     async def complete(self, prompt: str) -> str:
-        """Return the model's text response for one prompt."""
+        """返回模型针对单个提示词生成的文本响应。"""
 
 
 @dataclass(slots=True)
 class CallableLLM:
-    """Adapt a sync or async ``callable(prompt) -> str``."""
+    """适配同步或异步的 ``callable(prompt) -> str``。"""
 
     function: Callable[[str], str | Awaitable[str]]
 
@@ -34,7 +34,7 @@ class CallableLLM:
 
 @dataclass(slots=True)
 class InvokeLLMAdapter:
-    """Adapt Agent Memory-style objects exposing ``await invoke(messages=...)``."""
+    """适配提供 ``await invoke(messages=...)`` 的 Agent Memory 风格对象。"""
 
     llm: Any
 
@@ -48,7 +48,7 @@ class InvokeLLMAdapter:
 
 @dataclass(slots=True)
 class OpenAICompatibleLLM:
-    """Dependency-free adapter for an OpenAI-compatible chat-completions API."""
+    """无第三方依赖的 OpenAI 兼容 chat-completions API 适配器。"""
 
     base_url: str
     api_key: str
@@ -97,7 +97,7 @@ class OpenAICompatibleLLM:
 
 @dataclass(slots=True)
 class OllamaChatLLM:
-    """Ollama-native chat adapter with explicit thinking and context controls."""
+    """支持显式思考与上下文控制的 Ollama 原生聊天适配器。"""
 
     base_url: str
     model: str

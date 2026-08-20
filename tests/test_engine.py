@@ -133,6 +133,47 @@ class EngineTests(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(called)
         self.assertEqual(result.memories, ())
 
+    async def test_core_preprocessing_runs_before_prompt_and_updates_diagnostics(self):
+        source = batch(
+            [
+                {
+                    "memory_id": "core-old",
+                    "mem_type": "user_profile",
+                    "content": "用户喜欢王菲",
+                    "source_memory_ids": [],
+                    "is_important": False,
+                    "created_at": "2026-08-18T10:00:00+08:00",
+                },
+                {
+                    "memory_id": "core-new",
+                    "mem_type": "user_profile",
+                    "content": "用户喜欢王菲",
+                    "source_memory_ids": [],
+                    "is_important": False,
+                    "created_at": "2026-08-20T10:00:00+08:00",
+                },
+            ]
+        )
+
+        async def respond(prompt):
+            self.assertNotIn('"memory_id":"core-old"', prompt)
+            self.assertIn('"memory_id":"core-new"', prompt)
+            return json.dumps(
+                [
+                    {
+                        "mem_type": "user_profile",
+                        "content": "用户喜欢王菲",
+                        "source_memory_ids": ["core-new"],
+                        "is_important": False,
+                    }
+                ]
+            )
+
+        result = await DreamingExtractor(CallableLLM(respond)).dream(source)
+
+        self.assertEqual(result.input_memory_ids, ("core-new",))
+        self.assertEqual(result.omitted_memory_ids, ("core-old",))
+
     async def test_retries_bad_json_with_validation_feedback(self):
         prompts = []
 
@@ -220,6 +261,46 @@ class EngineTests(unittest.IsolatedAsyncioTestCase):
         result = await DreamingExtractor(CallableLLM(respond)).dream(source_batch)
         self.assertEqual(result.memories[0].source_session_ids, ("s1", "s2"))
         self.assertEqual(result.memories[0].created_at, "2026-08-20T10:00:00+08:00")
+
+    async def test_output_inherits_consistent_topic_and_drops_conflicting_subtopic(self):
+        source_batch = batch(
+            [
+                {
+                    "memory_id": "m1",
+                    "mem_type": "user_profile",
+                    "content": "a",
+                    "source_memory_ids": [],
+                    "is_important": False,
+                    "topic": "兴趣爱好",
+                    "subtopic": "音乐偏好",
+                },
+                {
+                    "memory_id": "m2",
+                    "mem_type": "user_profile",
+                    "content": "b",
+                    "source_memory_ids": [],
+                    "is_important": False,
+                    "topic": "兴趣爱好",
+                    "subtopic": "观影偏好",
+                },
+            ]
+        )
+
+        async def respond(_):
+            return json.dumps(
+                [
+                    {
+                        "mem_type": "user_profile",
+                        "content": "merged",
+                        "source_memory_ids": ["m1", "m2"],
+                        "is_important": False,
+                    }
+                ]
+            )
+
+        result = await DreamingExtractor(CallableLLM(respond)).dream(source_batch)
+        self.assertEqual(result.memories[0].topic, "兴趣爱好")
+        self.assertIsNone(result.memories[0].subtopic)
 
     async def test_caps_and_merges_exact_duplicates(self):
         async def respond(_):

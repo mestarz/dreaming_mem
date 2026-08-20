@@ -46,8 +46,8 @@ class AdapterTests(unittest.IsolatedAsyncioTestCase):
             top_p=0.1,
         )
         with patch("urllib.request.urlopen", side_effect=fake_urlopen):
-            # Exercise the HTTP serialization synchronously. ``complete`` is a
-            # thin asyncio.to_thread wrapper around this method.
+            # 直接同步验证 HTTP 序列化；``complete`` 仅通过
+            # asyncio.to_thread 对该方法做了一层轻量封装。
             self.assertEqual(client._complete_blocking("prompt"), "[]")
         self.assertEqual(captured["url"], "https://llm.example/v1/chat/completions")
         self.assertEqual(captured["authorization"], "Bearer secret")

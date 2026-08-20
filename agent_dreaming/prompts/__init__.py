@@ -1,2 +1,1 @@
-"""Packaged prompt templates."""
-
+"""随包分发的提示词模板。"""

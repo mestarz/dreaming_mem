@@ -20,12 +20,32 @@
 - `is_important`：必填布尔值。
 - `source_session_ids`：可选来源会话 ID 数组；输出会合并全部来源会话并跨轮次保留。
 - `created_at`：可选、带时区的 ISO 8601 时间；输出继承其来源中的最新时间。
+- `topic`、`subtopic`：可选分类；Dreaming 仅在直接来源分类一致时确定性继承，冲突时留空，不要求模型生成分类。
 
 输入和输出使用完全相同的顶层结构与记忆字段，因此 `result.to_dict()` 可以直接传给下一次 `dream()`。未知字段会被拒绝，避免拼错或无效参数被静默忽略。schema 1.0 中没有参与萃取的 `user_id`、`scope_id`、`batch_id` 和 `metadata` 已删除。
 
 从 schema 1.0 迁移时，需要删除上述四个字段，将 `source_session_id` 改为 `source_session_ids` 数组，并为首次萃取记录补上 `source_memory_ids: []`。这是破坏性升级，对应包版本 `0.2.0`。
 
 完整输入见 [examples/memories.json](examples/memories.json)。
+
+### 精简 CSV 输入
+
+CLI 也支持基础表头为 `id,type,topic,subtopic,content` 的 UTF-8 CSV；如果需要按时间
+选择最新记录，可以在末尾追加 `created_at,updated_at`。`type` 可使用 `core`、
+`episodic`、`semantic`，分别映射为内部的 `user_profile`、`episodic_memory`、
+`semantic_memory`。CSV 首次输入默认
+`source_memory_ids=[]`、`source_session_ids=[]`、`is_important=false`。
+
+输入进入 Prompt 前会经过独立的类型预处理模块：core 按去除首尾空白后的正文计算
+SHA-256，只保留完全相同正文中时间最新的一条；优先比较 `updated_at`，其次
+`created_at`，没有时间或时间相同时保留输入顺序靠后的记录。episodic 当前不做这一步，
+即使正文完全相同也会全部保留。此处不做大小写、Unicode 或语义相似归一化。
+
+```csv
+id,type,topic,subtopic,content
+1,core,兴趣爱好,音乐偏好,用户喜欢王菲
+2,episodic,旅行经历,澳洲旅行,用户去过悉尼
+```
 
 ## Python 调用
 
@@ -88,6 +108,19 @@ python -m agent_dreaming \
   --api-key your-key \
   --model your-model
 ```
+
+输入文件以 `.csv` 结尾时自动按精简 CSV 读取；输出文件以 `.csv` 结尾时写回相同五列格式：
+
+```bash
+python -m agent_dreaming \
+  --input workdata/benchmark/origin_memory/user_1/core_memory.csv \
+  --output dreamed.csv \
+  --base-url https://your-host/v1 \
+  --api-key your-key \
+  --model your-model
+```
+
+精简 CSV 输出有意不携带溯源、重要性和时间字段；需要延续完整来源链时应使用 JSON 输出。
 
 也可以使用环境变量 `DREAMING_API_BASE`、`DREAMING_API_KEY`、`DREAMING_MODEL`。先检查输入和最终提示词、不调用模型：
 

@@ -1,4 +1,4 @@
-"""Canonical public memory format for dreaming input and output."""
+"""Dreaming 输入与输出所用的公开规范记忆格式。"""
 
 from __future__ import annotations
 
@@ -9,11 +9,11 @@ from typing import Any, Mapping, Sequence
 
 
 class SchemaError(ValueError):
-    """Raised when caller input or model output violates the public schema."""
+    """调用方输入或模型输出违反公开数据结构时抛出的异常。"""
 
 
 class MemoryType(str, Enum):
-    """Memory types supported by the dreaming pipeline."""
+    """Dreaming 流程支持的记忆类型。"""
 
     USER_PROFILE = "user_profile"
     SEMANTIC_MEMORY = "semantic_memory"
@@ -70,7 +70,7 @@ def _optional_timestamp(value: Any) -> str | None:
 
 @dataclass(frozen=True, slots=True)
 class Memory:
-    """One canonical memory record, used unchanged before and after dreaming."""
+    """单条规范记忆记录，在 Dreaming 前后使用相同的数据结构。"""
 
     memory_id: str
     mem_type: MemoryType
@@ -79,6 +79,8 @@ class Memory:
     is_important: bool
     source_session_ids: tuple[str, ...] = ()
     created_at: str | None = None
+    topic: str | None = None
+    subtopic: str | None = None
 
     @classmethod
     def from_dict(cls, data: Mapping[str, Any]) -> "Memory":
@@ -94,6 +96,8 @@ class Memory:
                 "is_important",
                 "source_session_ids",
                 "created_at",
+                "topic",
+                "subtopic",
             },
             "memory",
         )
@@ -104,6 +108,10 @@ class Memory:
         source_memory_ids = _memory_ids(data.get("source_memory_ids"), "source_memory_ids")
         if memory_id in source_memory_ids:
             raise SchemaError("source_memory_ids must not reference the memory itself")
+        topic = _optional_text(data.get("topic"), "topic")
+        subtopic = _optional_text(data.get("subtopic"), "subtopic")
+        if subtopic is not None and topic is None:
+            raise SchemaError("subtopic requires topic")
         return cls(
             memory_id=memory_id,
             mem_type=_memory_type(data.get("mem_type")),
@@ -112,10 +120,12 @@ class Memory:
             is_important=important,
             source_session_ids=_memory_ids(data.get("source_session_ids", []), "source_session_ids"),
             created_at=_optional_timestamp(data.get("created_at")),
+            topic=topic,
+            subtopic=subtopic,
         )
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        result = {
             "memory_id": self.memory_id,
             "mem_type": self.mem_type.value,
             "content": self.content,
@@ -124,11 +134,16 @@ class Memory:
             "source_session_ids": list(self.source_session_ids),
             "created_at": self.created_at,
         }
+        if self.topic is not None:
+            result["topic"] = self.topic
+        if self.subtopic is not None:
+            result["subtopic"] = self.subtopic
+        return result
 
 
 @dataclass(frozen=True, slots=True)
 class MemoryBatch:
-    """Versioned document containing canonical memory records."""
+    """包含规范记忆记录的版本化文档。"""
 
     memories: tuple[Memory, ...]
     schema_version: str = "2.0"
