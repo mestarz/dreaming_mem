@@ -192,7 +192,7 @@ def main() -> None:
         "controlled_parameters": {
             "top_p": 0.1,
             "think": False,
-            "group_by": "source_session_id",
+            "group_by": "source_id from baseline records",
             "group_count": 103,
             "max_items_per_group": 5,
         },

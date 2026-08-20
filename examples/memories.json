@@ -1,31 +1,32 @@
 {
-  "schema_version": "1.0",
-  "batch_id": "batch-2026-08-19-001",
-  "user_id": "user-001",
-  "scope_id": "assistant-demo",
+  "schema_version": "2.0",
   "memories": [
     {
       "memory_id": "mem-001",
       "mem_type": "user_profile",
       "content": "用户在项目中优先选择 Python。",
-      "source_session_id": "session-101",
+      "source_memory_ids": [],
       "is_important": false,
+      "source_session_ids": ["session-101"],
       "created_at": "2026-08-01T10:00:00+08:00"
     },
     {
       "memory_id": "mem-002",
       "mem_type": "episodic_memory",
       "content": "用户在数据清洗任务中选择了 pandas，而不是电子表格。",
-      "source_session_id": "session-115",
-      "is_important": false
+      "source_memory_ids": [],
+      "is_important": false,
+      "source_session_ids": ["session-115"],
+      "created_at": "2026-08-03T14:30:00+08:00"
     },
     {
       "memory_id": "mem-003",
       "mem_type": "user_profile",
       "content": "用户要求后续自动化脚本使用 Python 实现。",
-      "source_session_id": "session-123",
-      "is_important": false
+      "source_memory_ids": [],
+      "is_important": false,
+      "source_session_ids": ["session-123"],
+      "created_at": "2026-08-05T09:15:00+08:00"
     }
   ]
 }
-

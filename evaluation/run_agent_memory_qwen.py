@@ -52,20 +52,18 @@ def write_json(path: Path, value: Any) -> None:
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
-def convert_input(rows: list[dict[str, Any]], summary: dict[str, Any]) -> dict[str, Any]:
+def convert_input(rows: list[dict[str, Any]]) -> dict[str, Any]:
     return {
-        "schema_version": "1.0",
-        "batch_id": "full_0706_first_pass_memories",
-        "user_id": summary["user_id"],
-        "scope_id": summary["scope_id"],
+        "schema_version": "2.0",
         "memories": [
             {
                 "memory_id": row["mem_id"],
                 "mem_type": row["type"],
                 "content": row["content"],
-                "source_session_id": row.get("source_id"),
-                "created_at": row.get("timestamp"),
+                "source_memory_ids": [],
                 "is_important": bool(row.get("is_important", False)),
+                "source_session_ids": [row["source_id"]] if row.get("source_id") else [],
+                "created_at": row.get("timestamp"),
             }
             for row in rows
         ],
@@ -186,8 +184,7 @@ async def run(args: argparse.Namespace) -> None:
     after = read_json(args.baseline_dir / "memories_after.json")
     added = read_json(args.baseline_dir / "dreaming_added_memories.json")
     removed = read_json(args.baseline_dir / "dreaming_removed_memories.json")
-    summary = read_json(args.baseline_dir / "summary_dreaming.json")
-    converted = convert_input(before, summary)
+    converted = convert_input(before)
     write_json(args.output_dir / "input_memories.json", converted)
 
     batch = MemoryBatch.from_dict(converted)

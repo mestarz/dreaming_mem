@@ -9,10 +9,10 @@
    - `semantic_memory`：与具体时间无关、可复用的事实或方法；
    - `episodic_memory`：用户经历过的具体事件。
 5. 关于用户的正文统一以“用户”为主语。输出语言与输入保持一致，不要翻译。
-6. 每条输出必须列出直接支撑它的 `source_memory_ids`；只能引用输入中真实存在的 ID。归纳条目必须引用至少两个 ID。
+6. 每条输出必须列出直接支撑它的 `source_memory_ids`；只能引用本轮输入记录的 `memory_id`。归纳条目必须引用至少两个 ID。模块会根据这些引用生成稳定的输出 `memory_id` 并延续已有来源链。
 7. 每条输出必须标注 `is_important`。重要记忆定义：{{important_memory_definition}}。不确定时填 `false`。
 8. 最多输出 {{max_items}} 条。没有值得长期保留的内容时输出 `[]`。
-9. 只输出 JSON 数组，不要 Markdown 代码围栏、解释或其他文字。元素结构如下：
+9. 只输出 JSON 数组，不要 Markdown 代码围栏、解释或其他文字。不要生成 `memory_id`，该 ID 由模块确定性生成。元素结构如下：
    `{"mem_type":"user_profile|semantic_memory|episodic_memory","content":"可独立理解的完整陈述","source_memory_ids":["输入记忆ID"],"is_important":false}`
 
 已萃取记忆（每行一个 JSON 对象，顺序由调用方提供）：

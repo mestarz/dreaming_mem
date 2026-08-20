@@ -2,14 +2,16 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 from dataclasses import dataclass
+from datetime import datetime
 from importlib.resources import files
 from typing import Any, Mapping, Sequence
 
 from .llm import LLMClient
-from .models import DreamedMemory, MemoryBatch, MemoryType, SchemaError
+from .models import Memory, MemoryBatch, MemoryType, SchemaError
 
 
 @dataclass(frozen=True, slots=True)
@@ -30,21 +32,29 @@ class DreamingConfig:
             raise ValueError("max_output_items must be positive")
         if self.retries <= 0:
             raise ValueError("retries must be positive")
+        if not isinstance(self.important_memory_definition, str) or not self.important_memory_definition.strip():
+            raise ValueError("important_memory_definition must be non-empty")
 
 
 @dataclass(frozen=True, slots=True)
 class DreamingResult:
     """Second-stage memories and the exact input coverage used to produce them."""
 
-    memories: tuple[DreamedMemory, ...]
+    memories: tuple[Memory, ...]
     input_memory_ids: tuple[str, ...]
     omitted_memory_ids: tuple[str, ...] = ()
-    schema_version: str = "1.0"
+    schema_version: str = "2.0"
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "schema_version": self.schema_version,
             "memories": [memory.to_dict() for memory in self.memories],
+        }
+
+    def diagnostics_dict(self) -> dict[str, list[str]]:
+        """Return execution coverage separately from the reusable memory document."""
+
+        return {
             "input_memory_ids": list(self.input_memory_ids),
             "omitted_memory_ids": list(self.omitted_memory_ids),
         }
@@ -57,17 +67,7 @@ def _estimate_tokens(text: str) -> int:
 
 
 def _memory_line(memory: Any) -> str:
-    data = {
-        "memory_id": memory.memory_id,
-        "mem_type": memory.mem_type.value,
-        "content": memory.content,
-        "is_important": memory.is_important,
-    }
-    if memory.source_session_id:
-        data["source_session_id"] = memory.source_session_id
-    if memory.created_at:
-        data["created_at"] = memory.created_at
-    return json.dumps(data, ensure_ascii=False, separators=(",", ":"))
+    return json.dumps(memory.to_dict(), ensure_ascii=False, separators=(",", ":"))
 
 
 def _fit_to_budget(memories: Sequence[Any], max_tokens: int) -> tuple[list[Any], list[str]]:
@@ -99,24 +99,28 @@ def _parse_json_text(text: str) -> Any:
         raise SchemaError(f"LLM output is not valid JSON: {exc.msg}") from exc
 
 
-def _as_important(value: Any) -> bool:
-    """Retain the original dreaming module's conservative coercion."""
+def _stable_memory_id(mem_type: MemoryType, content: str) -> str:
+    seed = f"{mem_type.value}\0{content}".encode("utf-8")
+    return "dream-" + hashlib.sha256(seed).hexdigest()
 
-    return value is True or value == 1 or (isinstance(value, str) and value.strip().lower() == "true")
 
-
-def _validate_output(parsed: Any, known_ids: Sequence[str], max_items: int) -> tuple[DreamedMemory, ...]:
-    if isinstance(parsed, Mapping) and "memories" in parsed:
-        parsed = parsed["memories"]
+def _validate_output(
+    parsed: Any,
+    inputs: Sequence[Memory],
+    max_items: int,
+) -> tuple[Memory, ...]:
     if not isinstance(parsed, list):
         raise SchemaError("LLM output must be a JSON array")
 
-    known_id_set = set(known_ids)
-    result: list[DreamedMemory] = []
-    positions = {memory_id: index for index, memory_id in enumerate(known_ids)}
+    input_by_id = {memory.memory_id: memory for memory in inputs}
+    positions = {memory.memory_id: index for index, memory in enumerate(inputs)}
+    candidates: list[tuple[MemoryType, str, tuple[str, ...], bool]] = []
     for index, item in enumerate(parsed[:max_items]):
         if not isinstance(item, Mapping):
             raise SchemaError(f"output item {index} must be an object")
+        unknown = sorted(set(item) - {"mem_type", "content", "source_memory_ids", "is_important"})
+        if unknown:
+            raise SchemaError(f"output item {index} has unknown fields: {', '.join(unknown)}")
         try:
             mem_type = MemoryType(item.get("mem_type"))
         except (TypeError, ValueError) as exc:
@@ -127,36 +131,51 @@ def _validate_output(parsed: Any, known_ids: Sequence[str], max_items: int) -> t
         source_ids = item.get("source_memory_ids")
         if not isinstance(source_ids, list) or not source_ids:
             raise SchemaError(f"output item {index} must have non-empty source_memory_ids")
-        if any(not isinstance(value, str) or value not in known_id_set for value in source_ids):
+        if any(not isinstance(value, str) or value not in input_by_id for value in source_ids):
             raise SchemaError(f"output item {index} references an unknown source_memory_id")
+        important = item.get("is_important")
+        if not isinstance(important, bool):
+            raise SchemaError(f"output item {index} has non-boolean is_important")
         unique_sources = tuple(dict.fromkeys(source_ids))
-        result.append(
-            DreamedMemory(
-                mem_type=mem_type,
-                content=content.strip(),
-                source_memory_ids=unique_sources,
-                is_important=_as_important(item.get("is_important", False)),
-            )
-        )
+        candidates.append((mem_type, content.strip(), unique_sources, important))
 
     # Exact duplicates are merged deterministically, retaining all provenance.
-    merged: dict[tuple[MemoryType, str], DreamedMemory] = {}
-    for item in result:
-        key = (item.mem_type, item.content)
+    merged: dict[tuple[MemoryType, str], tuple[list[str], bool]] = {}
+    for mem_type, content, source_ids, important in candidates:
+        key = (mem_type, content)
         previous = merged.get(key)
         if previous is None:
-            merged[key] = item
+            merged[key] = (list(source_ids), important)
             continue
-        sources = tuple(
-            sorted(set(previous.source_memory_ids + item.source_memory_ids), key=lambda value: positions.get(value, 0))
+        direct_sources = sorted(
+            set(previous[0] + list(source_ids)), key=lambda value: positions[value]
         )
-        merged[key] = DreamedMemory(
-            mem_type=item.mem_type,
-            content=item.content,
-            source_memory_ids=sources,
-            is_important=previous.is_important or item.is_important,
+        merged[key] = (direct_sources, previous[1] or important)
+
+    result: list[Memory] = []
+    for (mem_type, content), (direct_sources, important) in merged.items():
+        lineage: list[str] = []
+        session_ids: set[str] = set()
+        timestamps: list[str] = []
+        for source_id in direct_sources:
+            source = input_by_id[source_id]
+            lineage.extend(source.source_memory_ids or (source.memory_id,))
+            session_ids.update(source.source_session_ids)
+            if source.created_at is not None:
+                timestamps.append(source.created_at)
+        latest_timestamp = max(timestamps, key=datetime.fromisoformat) if timestamps else None
+        result.append(
+            Memory(
+                memory_id=_stable_memory_id(mem_type, content),
+                mem_type=mem_type,
+                content=content,
+                source_memory_ids=tuple(dict.fromkeys(lineage)),
+                is_important=important,
+                source_session_ids=tuple(sorted(session_ids)),
+                created_at=latest_timestamp,
+            )
         )
-    return tuple(merged.values())
+    return tuple(result)
 
 
 class DreamingExtractor:
@@ -193,12 +212,14 @@ class DreamingExtractor:
         prompt, omitted = self.build_prompt(batch)
         omitted_set = set(omitted)
         selected_ids = tuple(item.memory_id for item in batch.memories if item.memory_id not in omitted_set)
+        selected_id_set = set(selected_ids)
+        selected = tuple(item for item in batch.memories if item.memory_id in selected_id_set)
         last_error: Exception | None = None
         attempt_prompt = prompt
         for attempt in range(self._config.retries):
             try:
                 response = await self._llm.complete(attempt_prompt)
-                memories = _validate_output(_parse_json_text(response), selected_ids, self._config.max_output_items)
+                memories = _validate_output(_parse_json_text(response), selected, self._config.max_output_items)
                 return DreamingResult(
                     memories=memories,
                     input_memory_ids=selected_ids,

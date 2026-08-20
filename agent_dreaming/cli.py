@@ -78,6 +78,11 @@ async def _run(args: argparse.Namespace) -> int:
         timeout_seconds=args.timeout,
     )
     result = await DreamingExtractor(llm, config).dream(batch)
+    if result.omitted_memory_ids:
+        print(
+            f"omitted_memory_ids={json.dumps(result.omitted_memory_ids, ensure_ascii=False)}",
+            file=sys.stderr,
+        )
     _write_text(args.output, json.dumps(result.to_dict(), ensure_ascii=False, indent=2))
     return 0
 

@@ -27,11 +27,6 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def stable_mem_id(model: str, temperature: float, mem_type: str, content: str) -> str:
-    seed = f"{model}\0{temperature:g}\0{mem_type}\0{content}".encode("utf-8")
-    return "dream_" + hashlib.sha256(seed).hexdigest()[:24]
-
-
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--run-dir", type=Path, required=True)
@@ -57,7 +52,7 @@ def main() -> None:
     for item in result["memories"]:
         records.append(
             {
-                "mem_id": stable_mem_id(model, temperature, item["mem_type"], item["content"]),
+                "mem_id": item["memory_id"],
                 "content": item["content"],
                 "type": item["mem_type"],
                 "timestamp": metadata["started_at"],

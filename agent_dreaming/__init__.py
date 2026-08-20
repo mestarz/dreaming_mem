@@ -2,17 +2,16 @@
 
 from .engine import DreamingConfig, DreamingExtractor, DreamingResult
 from .llm import CallableLLM, InvokeLLMAdapter, LLMClient, OllamaChatLLM, OpenAICompatibleLLM
-from .models import DreamedMemory, ExtractedMemory, MemoryBatch, MemoryType, SchemaError
+from .models import Memory, MemoryBatch, MemoryType, SchemaError
 
 __all__ = [
     "CallableLLM",
-    "DreamedMemory",
     "DreamingConfig",
     "DreamingExtractor",
     "DreamingResult",
-    "ExtractedMemory",
     "InvokeLLMAdapter",
     "LLMClient",
+    "Memory",
     "MemoryBatch",
     "MemoryType",
     "OllamaChatLLM",

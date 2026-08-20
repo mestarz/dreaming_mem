@@ -4,23 +4,26 @@
 
 它有意不包含原模块的会话读取、KV checkpoint、向量库存储、后台定时器和遗忘曲线。调用方决定输入来自哪里、结果如何去重与回写。因此本包没有 Agent Memory 运行时依赖，也没有第三方 Python 依赖。
 
-## 输入格式（schema 1.0）
+## 统一记忆格式（schema 2.0）
 
 顶层字段：
 
-- `schema_version`：目前固定为 `"1.0"`，可省略。
-- `user_id`：必填，非空字符串。
-- `scope_id`：可选，默认 `"default"`。
-- `batch_id`：可选，调用方的批次追踪 ID。
+- `schema_version`：必填，固定为 `"2.0"`。
 - `memories`：必填数组；允许空数组。
 
 每条记忆字段：
 
-- `memory_id`：必填，在批次内唯一；也是输出溯源所使用的 ID。
+- `memory_id`：必填，在批次内唯一。二次萃取结果由模块根据类型和正文生成稳定 ID。
 - `mem_type`：必填，只能是 `user_profile`、`semantic_memory`、`episodic_memory`。
 - `content`：必填，已经完成第一次萃取的记忆正文。
-- `source_session_id`、`created_at`、`metadata`：可选来源信息。
-- `is_important`：可选布尔值，默认 `false`。
+- `source_memory_ids`：必填数组；首次输入通常为 `[]`，二次结果记录其根来源记忆 ID。
+- `is_important`：必填布尔值。
+- `source_session_ids`：可选来源会话 ID 数组；输出会合并全部来源会话并跨轮次保留。
+- `created_at`：可选、带时区的 ISO 8601 时间；输出继承其来源中的最新时间。
+
+输入和输出使用完全相同的顶层结构与记忆字段，因此 `result.to_dict()` 可以直接传给下一次 `dream()`。未知字段会被拒绝，避免拼错或无效参数被静默忽略。schema 1.0 中没有参与萃取的 `user_id`、`scope_id`、`batch_id` 和 `metadata` 已删除。
+
+从 schema 1.0 迁移时，需要删除上述四个字段，将 `source_session_id` 改为 `source_session_ids` 数组，并为首次萃取记录补上 `source_memory_ids: []`。这是破坏性升级，对应包版本 `0.2.0`。
 
 完整输入见 [examples/memories.json](examples/memories.json)。
 
@@ -31,19 +34,25 @@ import asyncio
 from agent_dreaming import DreamingExtractor, MemoryBatch, OpenAICompatibleLLM
 
 payload = {
-    "schema_version": "1.0",
-    "user_id": "user-001",
-    "scope_id": "assistant-demo",
+    "schema_version": "2.0",
     "memories": [
         {
             "memory_id": "mem-001",
             "mem_type": "user_profile",
-            "content": "用户在项目中优先选择 Python。"
+            "content": "用户在项目中优先选择 Python。",
+            "source_memory_ids": [],
+            "is_important": False,
+            "source_session_ids": ["session-101"],
+            "created_at": "2026-08-01T10:00:00+08:00"
         },
         {
             "memory_id": "mem-002",
             "mem_type": "episodic_memory",
-            "content": "用户用 pandas 完成了数据清洗。"
+            "content": "用户用 pandas 完成了数据清洗。",
+            "source_memory_ids": [],
+            "is_important": False,
+            "source_session_ids": ["session-115"],
+            "created_at": "2026-08-03T14:30:00+08:00"
         }
     ]
 }
@@ -90,21 +99,22 @@ python -m agent_dreaming -i examples/memories.json --print-prompt
 
 ```json
 {
-  "schema_version": "1.0",
+  "schema_version": "2.0",
   "memories": [
     {
+      "memory_id": "dream-<sha256>",
       "mem_type": "user_profile",
       "content": "用户偏好使用 Python 处理数据。",
       "source_memory_ids": ["mem-001", "mem-002"],
-      "is_important": false
+      "is_important": false,
+      "source_session_ids": ["session-101", "session-115"],
+      "created_at": "2026-08-03T14:30:00+08:00"
     }
-  ],
-  "input_memory_ids": ["mem-001", "mem-002"],
-  "omitted_memory_ids": []
+  ]
 }
 ```
 
-`source_memory_ids` 只能引用本次实际送入模型的记忆，模块会严格校验，防止无来源结论进入结果。输入超过 `max_input_tokens` 时沿用原 Dreaming “保留首尾、从中间删除”的压缩策略；被压缩掉的 ID 会按原输入顺序出现在 `omitted_memory_ids` 中，不会静默丢失。如果仅首尾两条本身仍超限，调用会明确报错并要求增大限制或缩短输入，不会把超限请求静默发送给模型。
+模型返回的 `source_memory_ids` 只能引用本轮实际送入的记忆，模块会严格校验并将已有来源链展开到最终结果，防止无来源结论进入结果。输入超过 `max_input_tokens` 时沿用原 Dreaming “保留首尾、从中间删除”的压缩策略；Python 调用可通过 `result.diagnostics_dict()` 查看 `input_memory_ids` 和 `omitted_memory_ids`，CLI 会把遗漏 ID 写到 stderr。如果仅首尾两条仍超限，调用会明确报错。
 
 ## 与原 Agent Memory Dreaming 的边界
 

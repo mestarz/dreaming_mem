@@ -29,12 +29,12 @@ from run_agent_memory_qwen import (
 )
 
 
-def group_memories(converted: dict[str, Any]) -> list[tuple[str, list[dict[str, Any]]]]:
+def group_memories(rows: list[dict[str, Any]]) -> list[tuple[str, list[dict[str, Any]]]]:
     groups: dict[str, list[dict[str, Any]]] = {}
-    for memory in converted["memories"]:
-        source_id = memory.get("source_session_id") or "__no_source__"
-        groups.setdefault(source_id, []).append(memory)
-    return list(groups.items())
+    for row in rows:
+        source_id = row.get("source_id") or "__no_source__"
+        groups.setdefault(source_id, []).append(row)
+    return [(source_id, convert_input(group)["memories"]) for source_id, group in groups.items()]
 
 
 def merge_exact(memories: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -48,12 +48,18 @@ def merge_exact(memories: list[dict[str, Any]]) -> list[dict[str, Any]]:
         previous["source_memory_ids"] = list(
             dict.fromkeys(previous["source_memory_ids"] + memory["source_memory_ids"])
         )
+        previous["source_session_ids"] = sorted(
+            set(previous["source_session_ids"] + memory["source_session_ids"])
+        )
+        timestamps = [value for value in (previous["created_at"], memory["created_at"]) if value]
+        previous["created_at"] = max(timestamps, key=datetime.fromisoformat) if timestamps else None
         previous["is_important"] = previous["is_important"] or memory["is_important"]
     return list(merged.values())
 
 
 def initial_progress(args: argparse.Namespace) -> dict[str, Any]:
     return {
+        "schema_version": "2.0",
         "status": "running",
         "model": args.model,
         "temperature": args.temperature,
@@ -69,6 +75,7 @@ def initial_progress(args: argparse.Namespace) -> dict[str, Any]:
 
 def validate_progress(progress: dict[str, Any], args: argparse.Namespace) -> None:
     expected = {
+        "schema_version": "2.0",
         "model": args.model,
         "temperature": args.temperature,
         "top_p": args.top_p,
@@ -85,10 +92,9 @@ async def run(args: argparse.Namespace) -> None:
     after = read_json(args.baseline_dir / "memories_after.json")
     added = read_json(args.baseline_dir / "dreaming_added_memories.json")
     removed = read_json(args.baseline_dir / "dreaming_removed_memories.json")
-    summary = read_json(args.baseline_dir / "summary_dreaming.json")
-    converted = convert_input(before, summary)
+    converted = convert_input(before)
     write_json(args.output_dir / "input_memories.json", converted)
-    groups = group_memories(converted)
+    groups = group_memories(before)
 
     progress_path = args.output_dir / "group_progress.json"
     if args.resume and progress_path.exists():
@@ -125,10 +131,7 @@ async def run(args: argparse.Namespace) -> None:
 
             group_batch = MemoryBatch.from_dict(
                 {
-                    "schema_version": "1.0",
-                    "batch_id": source_id,
-                    "user_id": converted["user_id"],
-                    "scope_id": converted["scope_id"],
+                    "schema_version": "2.0",
                     "memories": memories,
                 }
             )
@@ -181,13 +184,12 @@ async def run(args: argparse.Namespace) -> None:
     write_json(progress_path, progress)
     outputs = merge_exact(progress["unmerged_memories"])
     result_data = {
-        "schema_version": "1.0",
+        "schema_version": "2.0",
         "memories": outputs,
-        "input_memory_ids": [memory["memory_id"] for memory in converted["memories"]],
-        "omitted_memory_ids": [
-            memory_id for batch in progress["batch_results"] for memory_id in batch["omitted_memory_ids"]
-        ],
     }
+    omitted_memory_ids = [
+        memory_id for batch in progress["batch_results"] for memory_id in batch["omitted_memory_ids"]
+    ]
     write_json(args.output_dir / "dreaming_result.json", result_data)
     write_json(args.output_dir / "raw_llm_responses.json", progress["raw_responses"])
     write_json(args.output_dir / "batch_results.json", progress["batch_results"])
@@ -224,10 +226,10 @@ async def run(args: argparse.Namespace) -> None:
         "completed_group_count": len(completed),
         "unmerged_output_count": len(progress["unmerged_memories"]),
         "output_count": len(outputs),
-        "omitted_count": len(result_data["omitted_memory_ids"]),
+        "omitted_count": len(omitted_memory_ids),
         "llm_call_count": sum(batch["llm_call_count"] for batch in progress["batch_results"]),
         "config": {
-            "group_by": "source_session_id",
+            "group_by": "source_id from baseline records",
             "max_input_tokens_per_group": args.max_input_tokens,
             "max_items_per_group": args.max_items_per_group,
             "retries": args.retries,
@@ -243,7 +245,7 @@ async def run(args: argparse.Namespace) -> None:
     report = build_report(metadata, comparison)
     report = report.replace(
         "## 运行信息",
-        "## 运行信息\n\n- 执行策略：按 `source_session_id` 分为 "
+        "## 运行信息\n\n- 执行策略：按基线记录的 `source_id` 分为 "
         f"{len(groups)} 组，每组最多输出 {args.max_items_per_group} 条，再做跨组精确去重。",
     )
     (args.output_dir / "report.md").write_text(report, encoding="utf-8")
